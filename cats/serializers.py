@@ -6,4 +6,7 @@ from .models import Cat
 class CatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cat
-        fields = '__all__'
+        #  вместо всех полей...
+        #  fields = '__all__'
+        #  сериализуем только некоторые. Например, без поля "id"
+        fields = ('name', 'color', 'birth_year')
