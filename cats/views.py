@@ -9,7 +9,7 @@ from .serializers import CatSerializer
 # декоратор @api_view объявляет функцию - вью-функцией работы с api
 # в нем указываются методы, только которые и являются допустимыми,
 # при попытке других - возвращается ошибка 405.
-@api_view(['GET', 'POST', 'PUT'])
+@api_view(['GET', 'POST', 'PUT', 'PATCH'])
 def cat_list(request):
 
     #  если метод в запросе метод POST (добавить запись), то...
@@ -59,7 +59,7 @@ def cat_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     #  если метод в запросе метод PUT (полное обновление записи), то...
-    if request.method == 'PUT':
+    if request.method in ('PUT', 'PATCH'):
         # Создать объект сериализатора, передав ему в data -
         # данные из реквеста.
         # Причем, если передается/ожидается единственный объект...
@@ -94,12 +94,24 @@ def cat_list(request):
         cat = Cat.objects.get(id=3)
         # ... и указать его первым параметром при создании объекта с-ра.
 
-        serializer = CatSerializer(cat, data=request.data, many=False)
+        # Внимание! PUT - метод полного обновления
+        # (ожидает полный набор полей),
+        # PATCH - частичного обновления.
+        if request.method == 'PUT':
+            serializer = CatSerializer(cat, data=request.data, many=False)
+        if request.method == 'PATCH':
+            serializer = CatSerializer(
+                cat,
+                data=request.data,
+                many=False,
+                partial=True)  # !!!!!
 
         # вызвать метод .is_valid сериализатора.
         # если он вернет True, т.е. данные валидны, то...
         if serializer.is_valid():
-            #  ... создать новый объект БД. (НЕ ОБНОВИТЬ ИМЕЮЩИЙСЯ!)
+            #  ... обновить объект БД. (НЕ СОЗДАТЬ!)
+            #  На то, что обновить а не создать, указывает
+            #  наличие объекта модели при создании сериализатора выше.
             serializer.save()
             # Вызвать метод .data объекта сериализатора, в котором будет
             # только что записанный в базу объект сериализации,
