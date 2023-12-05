@@ -1,6 +1,7 @@
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Cat
 from .serializers import CatSerializer
@@ -128,7 +129,7 @@ def cat_list(request):
     cats = Cat.objects.all()
     #  создать объект сериализатора, передав в него
     #  только что созданный кверисет,
-    #  а если объекто набор, то параметр many надо в True.
+    #  а если объектов будет набор, то параметр many надо в True.
     serializer = CatSerializer(cats, many=True)
     # Вызвать метод .data объекта сериализатора, в котором будет
     # только что взятый из базы объект сериализации,
@@ -138,3 +139,53 @@ def cat_list(request):
     # данные из которого и должны быть отправлены
     # в ответ на запрос в JSON формате.
     return Response(serializer.data)
+
+
+class APICat(APIView):
+    #  Все операции CRUD при использовании view-классов
+    #  принято разделять на 2 группы:
+    #  в одном view-классе описывается создание нового объекта и
+    #  запрос всех объектов (например класс APICat),
+    #  а в другом классе — получение/изменение/удаление определённого объекта.
+    #
+    #  Если view-класс унаследован от класса APIView,
+    #  то при получении GET-запроса в классе будет вызван метод get(),
+    #  а при получении POST-запроса — метод post().
+    #  Такие методы описаны для всех типов запросов, но по умолчанию
+    #  эти методы не выполняют никаких действий,
+    #  их нужно описывать самостоятельно.
+    #  def get(self, request):
+    #      ...
+    #
+    #  def post(self, request):
+    #      ...
+    #
+    #  def put(self, request):
+    #      ...
+    #
+    #  def patch(self, request):
+    #      ...
+    #
+    #  def delete(self, request):
+    #      ...
+    def get(self, request):
+        cats = Cat.objects.all()
+        serializer = CatSerializer(cats, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CatSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CatList(generics.ListCreateAPIView):
+    queryset = Cat.objects.all()
+    serializer_class = CatSerializer
+
+
+class CatDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Cat.objects.all()
+    serializer_class = CatSerializer
