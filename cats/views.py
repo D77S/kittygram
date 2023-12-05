@@ -182,10 +182,15 @@ class APICat(APIView):
 
 
 class CatList(generics.ListCreateAPIView):
+    #  комбинированный дженерик-класс ListCreateAPIView:
+    #  он возвращает всю коллекцию объектов
+    #  или может создать новую запись в БД
     queryset = Cat.objects.all()
     serializer_class = CatSerializer
 
 
 class CatDetail(generics.RetrieveUpdateDestroyAPIView):
+    # комбинированный дженерик-класс RetrieveUpdateDestroyAPIView:
+    # его работа — возвращать, обновлять или удалять объекты модели по одному.
     queryset = Cat.objects.all()
     serializer_class = CatSerializer
