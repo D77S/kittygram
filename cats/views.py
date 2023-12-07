@@ -181,10 +181,15 @@ class APICat(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+#  дженерик-классы:
+#  RetrieveAPIView — возвращает один объект (обрабатывает только GET-запросы);
+#  CreateAPIView — создаёт новый объект (обрабатывает только POST-запросы);
+#  UpdateAPIView — изменяет объект (обрабатывает только PUT- и PATCH-запросы);
+#  DestroyAPIView — удаляет объект (обрабатывает только DELETE-запросы)
 class CatList(generics.ListCreateAPIView):
     #  комбинированный дженерик-класс ListCreateAPIView:
-    #  он возвращает всю коллекцию объектов
-    #  или может создать новую запись в БД
+    #  - на GET-запрос он возвращает всю коллекцию объектов
+    #  - на POST-запрос он создаст новую запись в БД
     queryset = Cat.objects.all()
     serializer_class = CatSerializer
 
